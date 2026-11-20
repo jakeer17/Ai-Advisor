@@ -1,0 +1,21 @@
+# The deployable site is the React (Vite) frontend in client/.
+# The Express API (server/) and Python ML service (ml-service/) are not part of this build.
+[build]
+  base = "client"
+  # Install deps as part of the command so the build also works where no separate install step runs.
+  command = "npm ci --legacy-peer-deps && npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Vite 8 requires Node 20.19+ / 22.12+; matches the client's Dockerfile (node:22).
+  NODE_VERSION = "22"
+  # lucide-react@0.359 declares a React <=18 peer dependency while the app uses React 19,
+  # so a strict npm install fails. The project README/Dockerfile install with this flag too.
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# React Router (BrowserRouter) client-side routes: serve index.html for unknown paths,
+# mirroring the try_files fallback in the client's nginx config.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -35,15 +35,9 @@ services:
     name: ai-advisor-client
     rootDir: client
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --legacy-peer-deps && npm run build
     publishDir: dist
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
-    envVars:
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: ai-advisor-api
-          property: host

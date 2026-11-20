@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  BarChart3, Database, Sparkles, Shield, LogOut, Sun, Moon, Menu, ChevronLeft, ChevronRight, User
+  BarChart3, Database, Sparkles, Shield, LogOut, Sun, Moon, Menu, ChevronLeft, ChevronRight, User, Brain
 } from 'lucide-react';
 
 // Import Pages
@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Datasets from './pages/Datasets';
 import Chat from './pages/Chat';
+import MLStudio from './pages/MLStudio';
 import Admin from './pages/Admin';
 
 const App = () => {
@@ -54,6 +55,7 @@ const App = () => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'datasets', label: 'Dataset Workspace', icon: Database },
+    { id: 'models', label: 'ML Model Studio', icon: Brain },
     { id: 'chat', label: 'AI Chat Advisor', icon: Sparkles }
   ];
 
@@ -68,6 +70,8 @@ const App = () => {
         return <Dashboard activeDataset={activeDataset} />;
       case 'datasets':
         return <Datasets activeDataset={activeDataset} setActiveDataset={setActiveDataset} />;
+      case 'models':
+        return <MLStudio activeDataset={activeDataset} />;
       case 'chat':
         return <Chat activeDataset={activeDataset} />;
       case 'admin':

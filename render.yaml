@@ -1,0 +1,49 @@
+services:
+  # 1. Python ML Service (FastAPI)
+  - type: web
+    name: ai-advisor-ml
+    runtime: python
+    rootDir: ml-service
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 8000
+
+  # 2. Node.js API Gateway (Express)
+  - type: web
+    name: ai-advisor-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: ML_SERVICE_URL
+        fromService:
+          type: web
+          name: ai-advisor-ml
+          property: host
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 5000
+
+  # 3. React Frontend (Vite Static Site)
+  - type: static
+    name: ai-advisor-client
+    rootDir: client
+    plan: free
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: ai-advisor-api
+          property: host

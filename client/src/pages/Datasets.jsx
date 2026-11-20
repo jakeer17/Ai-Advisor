@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Upload, Database, FileSpreadsheet, Trash2, Edit3, CheckCircle, AlertTriangle, Loader, Info, HelpCircle } from 'lucide-react';
+import { Upload, Database, FileSpreadsheet, Trash2, Edit3, CheckCircle, AlertTriangle, Loader, Info, HelpCircle, Download } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -13,8 +13,32 @@ const Datasets = ({ activeDataset, setActiveDataset }) => {
   const [uploadError, setUploadError] = useState('');
   const [renamingId, setRenamingId] = useState(null);
   const [renamingName, setRenamingName] = useState('');
+  const [downloadingReport, setDownloadingReport] = useState(false);
 
   const fileInputRef = useRef(null);
+
+  const handleDownloadReport = async () => {
+    if (!activeDataset) return;
+    setDownloadingReport(true);
+    try {
+      const res = await axios.get(`${API_URL}/datasets/${activeDataset._id}/report`, {
+        responseType: 'blob'
+      });
+      const blobUrl = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', `${activeDataset.name}-Executive-Report.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Failed to download report:', err);
+      alert('Could not download report. Please check if the backend is running.');
+    } finally {
+      setDownloadingReport(false);
+    }
+  };
 
   useEffect(() => {
     fetchDatasets();
@@ -270,16 +294,36 @@ const Datasets = ({ activeDataset, setActiveDataset }) => {
               className="glass-card p-6 h-full flex flex-col"
             >
               {/* Active Header */}
-              <div className="flex items-center justify-between pb-4 border-b dark:border-slate-800 border-slate-200 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b dark:border-slate-800 border-slate-200 mb-6">
                 <div>
                   <h2 className="text-lg font-bold dark:text-white text-slate-800">{activeDataset.name}</h2>
                   <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
                     Dataset Schema Profiling ({activeDataset.columns.length} columns identified)
                   </p>
                 </div>
-                <span className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold rounded-full uppercase tracking-wider">
-                  Active
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleDownloadReport}
+                    disabled={downloadingReport}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm transition-all disabled:opacity-50"
+                    title="Download comprehensive PDF report"
+                  >
+                    {downloadingReport ? (
+                      <>
+                        <Loader className="w-3.5 h-3.5 animate-spin" />
+                        <span>Generating PDF...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Executive PDF Report</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                    Active
+                  </span>
+                </div>
               </div>
 
               {/* Data Summary Grid */}
